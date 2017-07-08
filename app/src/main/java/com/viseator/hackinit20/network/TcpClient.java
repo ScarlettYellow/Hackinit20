@@ -25,7 +25,6 @@ public class TcpClient {
     private Object obj;
     private Thread thread;
     private String ipAddress;
-    private Handler handler;
 
 
     class SendData implements Runnable {
@@ -42,14 +41,6 @@ public class TcpClient {
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
                 objectOutputStream.writeObject(obj);
 
-                InputStream inputStream = socket.getInputStream();
-                ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
-                Object resultObject =  objectInputStream.readObject();
-
-                Message msg = new Message();
-                msg.what = SERVER_PORT;
-                msg.obj = resultObject;
-                handler.sendMessage(msg);
             } catch (SocketTimeoutException e) {
                 Log.d(TAG, "resend");
                 try {
@@ -57,17 +48,16 @@ public class TcpClient {
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
-                sendRequest(ipAddress, obj, handler);
-            } catch (IOException | ClassNotFoundException e) {
+                sendRequest(ipAddress, obj);
+            } catch (IOException  e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public void sendRequest(String ipAddress, Object obj, Handler handler) {
+    public void sendRequest(String ipAddress, Object obj) {
         this.ipAddress = ipAddress;
         this.obj = obj;
-        this.handler = handler;
         thread = new Thread(new SendData());
         thread.start();
     }

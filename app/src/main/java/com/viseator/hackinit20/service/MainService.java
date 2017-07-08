@@ -21,18 +21,16 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.jaredrummler.android.processes.ProcessManager;
 import com.viseator.hackinit20.R;
 import com.viseator.hackinit20.data.ProcessInfo;
-import com.viseator.hackinit20.data.UDPDataPackage;
 import com.viseator.hackinit20.network.ComUtil;
 import com.viseator.hackinit20.network.GetNetworkInfo;
+import com.viseator.hackinit20.network.TcpClient;
+import com.viseator.hackinit20.network.TcpServer;
 import com.viseator.hackinit20.util.ConvertData;
 
-import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -53,8 +51,9 @@ public class MainService extends Service implements View.OnTouchListener {
     private WindowManager mWindowManager;
     private HashMap<String, ProcessInfo> processinfors;
     private WindowManager.LayoutParams mLayoutParams;
+    private TcpServer mTcpServer;
+    private TcpClient mTcpClient;
     public String ipAddress;
-    private boolean ipGot = false;
     private int initX = 0;
     private int initY = 0;
     private int lastX = 0;
@@ -75,9 +74,17 @@ public class MainService extends Service implements View.OnTouchListener {
                         ipAddress = ip;
                         Log.d(TAG, ipAddress);
                         mComUtil.broadCast(ConvertData.objectToByte(GetNetworkInfo.getIp(getApplicationContext())));
-                        ipGot = true;
+                        TcpInit();
+
                     }
                     break;
+                case TcpServer.RECEIVE_REQUEST:
+                    Log.d(TAG, (String) msg.obj);
+                    if (((msg.obj)).equals("test")) {
+                        TcpClientInit();
+                    }
+                    break;
+
             }
             return true;
         }
@@ -210,4 +217,15 @@ public class MainService extends Service implements View.OnTouchListener {
         mComUtil = new ComUtil(mHandler);
         mComUtil.startReceiveMsg();
     }
+
+    private void TcpInit() {
+        mTcpServer = new TcpServer();
+        mTcpServer.startServer(mHandler);
+    }
+
+    private void TcpClientInit() {
+        mTcpClient = new TcpClient();
+        mTcpClient.sendRequest(ipAddress, "test");
+    }
+
 }
