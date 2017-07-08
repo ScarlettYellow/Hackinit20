@@ -8,9 +8,11 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.viseator.hackinit20.R;
 
@@ -24,10 +26,15 @@ import butterknife.ButterKnife;
  *         Email: viseator@gmail.com
  */
 
-public class MainService extends Service {
+public class MainService extends Service implements View.OnTouchListener {
     private static final String TAG = "@vir MainService";
     private WindowManager mWindowManager;
     private WindowManager.LayoutParams mLayoutParams;
+    private int initX = 0;
+    private int initY = 0;
+    private int lastX = 0;
+    private int lastY = 0;
+    private boolean isDragging = false;
     View mContentView;
     @BindView(R.id.test)
     ImageView mImageView;
@@ -54,6 +61,15 @@ public class MainService extends Service {
                 PixelFormat.TRANSLUCENT);
 
         mLayoutParams.gravity = Gravity.TOP | Gravity.START;
+
+//        mContentView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Toast.makeText(getApplicationContext(), "Click", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+        mContentView.setOnTouchListener(this);
+
         mWindowManager.addView(mContentView, mLayoutParams);
         mImageView.setImageDrawable(getDrawable(R.drawable.star));
         Log.d(TAG, String.valueOf("add View"));
@@ -65,5 +81,31 @@ public class MainService extends Service {
         if (mContentView != null) {
             mWindowManager.removeView(mContentView);
         }
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        int rawX = (int) event.getRawX();
+        int rawY = (int) event.getRawY();
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                isDragging = true;
+                initX = rawX;
+                initY = rawY;
+                lastX = rawX;
+                lastY = rawY;
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if (!isDragging) {
+                    break;
+                }
+                mLayoutParams.x = (mLayoutParams.x + rawX - lastX);
+                mLayoutParams.y = (mLayoutParams.y + rawY - lastY);
+                mWindowManager.updateViewLayout(mContentView, mLayoutParams);
+                lastX = rawX;
+                lastY = rawY;
+                break;
+        }
+        return true;
     }
 }
