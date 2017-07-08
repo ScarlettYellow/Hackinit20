@@ -19,6 +19,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.jaredrummler.android.processes.ProcessManager;
 import com.viseator.hackinit20.R;
@@ -97,6 +98,7 @@ public class MainService extends Service implements View.OnTouchListener {
         return null;
     }
 
+    private Handler handler = new Handler();
     @Override
     public void onCreate() {
         super.onCreate();
