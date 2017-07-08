@@ -1,6 +1,10 @@
 package com.viseator.hackinit20.network;
 
 import android.os.Handler;
+import android.os.Message;
+import android.provider.Telephony;
+
+import com.viseator.hackinit20.util.ConvertData;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,6 +38,7 @@ public class TcpServer {
                 serverSocket = new ServerSocket();
                 serverSocket.setReuseAddress(true);
                 serverSocket.bind(new InetSocketAddress(SERVER_PORT));
+                serverSocket.setSoTimeout(99999);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -45,14 +50,10 @@ public class TcpServer {
                     ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
 
                     Object obj =  objectInputStream.readObject();
-
-                    OutputStream outputStream = socket.getOutputStream();
-                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
-                    objectOutputStream.writeObject(obj);
-                    objectOutputStream.flush();
-
-                    objectOutputStream.close();
-                    outputStream.close();
+                    Message msg = Message.obtain();
+                    msg.what = RECEIVE_REQUEST;
+                    msg.obj = obj;
+                    handler.sendMessage(msg);
                     objectInputStream.close();
                     inputStream.close();
                 } catch (IOException | ClassNotFoundException e) {

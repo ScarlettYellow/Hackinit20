@@ -24,13 +24,13 @@ import com.jaredrummler.android.processes.ProcessManager;
 import com.viseator.hackinit20.R;
 import com.viseator.hackinit20.data.FilterApps;
 import com.viseator.hackinit20.data.ProcessInfo;
-import com.viseator.hackinit20.data.UDPDataPackage;
 import com.viseator.hackinit20.network.ComUtil;
 import com.viseator.hackinit20.network.GetNetworkInfo;
+import com.viseator.hackinit20.network.TcpClient;
+import com.viseator.hackinit20.network.TcpServer;
 import com.viseator.hackinit20.util.ConvertData;
 import com.viseator.hackinit20.utils.DateUtils;
 
-import java.nio.charset.Charset;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -52,8 +52,9 @@ public class MainService extends Service implements View.OnTouchListener {
     private WindowManager mWindowManager;
     private HashMap<String, ProcessInfo> processinfors, oldprocessinfo;
     private WindowManager.LayoutParams mLayoutParams;
+    private TcpServer mTcpServer;
+    private TcpClient mTcpClient;
     public String ipAddress;
-    private boolean ipGot = false;
     private int initX = 0;
     private int initY = 0;
     private int lastX = 0;
@@ -67,22 +68,28 @@ public class MainService extends Service implements View.OnTouchListener {
         public boolean handleMessage(Message msg) {
             switch (msg.what) {
                 case ComUtil.BROADCAST_PORT:
-                    String ip = new String((byte[]) msg.obj, ComUtil.CHARSET);
-                    if (!ip.equals(GetNetworkInfo.getIp(getApplicationContext())
+                    String ip = (String) ConvertData.byteToObject((byte[]) msg.obj);
+                    if (!ip.equals(GetNetworkInfo.getIp(getApplicationContext
+                            ())
                     )) {
                         ipAddress = ip;
                         Log.d(TAG, ipAddress);
-                        mComUtil.broadCast(new String(GetNetworkInfo.getIp(getApplicationContext
-                                ())).getBytes(ComUtil.CHARSET));
-                        ipGot = true;
+                        mComUtil.broadCast(ConvertData.objectToByte(GetNetworkInfo.getIp(getApplicationContext())));
+                        TcpInit();
+
                     }
                     break;
+                case TcpServer.RECEIVE_REQUEST:
+                    Toast.makeText(MainService.this, (String) msg.obj, Toast.LENGTH_SHORT).show();
+                    if (((msg.obj)).equals("test")) {
+                        TcpClientInit();
+                    }
+                    break;
+
             }
             return true;
         }
     });
-
-    private Handler handler = new Handler();
 
     @Nullable
     @Override
@@ -228,4 +235,19 @@ public class MainService extends Service implements View.OnTouchListener {
         mComUtil = new ComUtil(mHandler);
         mComUtil.startReceiveMsg();
     }
+
+    private void TcpInit() {
+        mTcpServer = new TcpServer();
+        mTcpServer.startServer(mHandler);
+    }
+
+    private void TcpClientInit() {
+        mTcpClient = new TcpClient();
+        mTcpClient.sendRequest(ipAddress, "test");
+    }
+
+    private void sendData(String name,long time,boolean isOpen) {
+
+    }
+
 }
