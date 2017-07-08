@@ -62,12 +62,6 @@ public class MainService extends Service implements View.OnTouchListener {
 
         mLayoutParams.gravity = Gravity.TOP | Gravity.START;
 
-//        mContentView.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Toast.makeText(getApplicationContext(), "Click", Toast.LENGTH_SHORT).show();
-//            }
-//        });
         mContentView.setOnTouchListener(this);
 
         mWindowManager.addView(mContentView, mLayoutParams);
@@ -108,4 +102,5 @@ public class MainService extends Service implements View.OnTouchListener {
         }
         return true;
     }
+
 }
