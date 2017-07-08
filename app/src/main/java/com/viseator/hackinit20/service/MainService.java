@@ -9,7 +9,9 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.os.Process;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -24,6 +26,9 @@ import android.widget.Toast;
 import com.jaredrummler.android.processes.ProcessManager;
 import com.viseator.hackinit20.R;
 import com.viseator.hackinit20.data.ProcessInfo;
+import com.viseator.hackinit20.data.UDPDataPackage;
+import com.viseator.hackinit20.network.ComUtil;
+import com.viseator.hackinit20.util.ConvertData;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -41,9 +46,11 @@ import butterknife.ButterKnife;
 
 public class MainService extends Service implements View.OnTouchListener {
     private static final String TAG = "@vir MainService";
+    private ComUtil mComUtil;
     private WindowManager mWindowManager;
     private HashMap<String, ProcessInfo> processinfors;
     private WindowManager.LayoutParams mLayoutParams;
+    public String ipAddress;
     private int initX = 0;
     private int initY = 0;
     private int lastX = 0;
@@ -52,6 +59,20 @@ public class MainService extends Service implements View.OnTouchListener {
     View mContentView;
     @BindView(R.id.test)
     ImageView mImageView;
+    private Handler mHandler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            switch (msg.what) {
+                case ComUtil.BROADCAST_PORT:
+                    UDPDataPackage result = (UDPDataPackage) (ConvertData.byteToObject((byte[]) msg.obj));
+                    ipAddress = result.getIpAddress();
+                    Log.d(TAG, ipAddress);
+                    mComUtil.broadCast(ConvertData.objectToByte(new UDPDataPackage(getApplicationContext())));
+                    break;
+            }
+            return true;
+        }
+    });
 
     @Nullable
     @Override
@@ -62,8 +83,9 @@ public class MainService extends Service implements View.OnTouchListener {
     @Override
     public void onCreate() {
         super.onCreate();
+        showBubble();
 
-
+        initNetwork();
         processinfors = new HashMap<>();
         PackageManager manager = getPackageManager();
 
@@ -175,4 +197,8 @@ public class MainService extends Service implements View.OnTouchListener {
         return true;
     }
 
+    private void initNetwork() {
+        mComUtil = new ComUtil(mHandler);
+        mComUtil.startReceiveMsg();
+    }
 }

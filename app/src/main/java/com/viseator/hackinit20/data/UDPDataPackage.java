@@ -1,5 +1,9 @@
 package com.viseator.hackinit20.data;
 
+import android.content.Context;
+
+import com.viseator.hackinit20.network.GetNetworkInfo;
+
 import java.io.Serializable;
 
 /**
@@ -14,6 +18,11 @@ public class UDPDataPackage implements Serializable {
     private String macAddress;
     private String title;
     private String id;
+
+    public UDPDataPackage(Context context) {
+        this.ipAddress = GetNetworkInfo.getIp(context);
+        this.macAddress = GetNetworkInfo.getMac();
+    }
 
     public String getIpAddress() {
         return ipAddress;
