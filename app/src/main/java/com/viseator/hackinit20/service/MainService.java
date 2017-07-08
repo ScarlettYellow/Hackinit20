@@ -28,8 +28,10 @@ import com.viseator.hackinit20.R;
 import com.viseator.hackinit20.data.ProcessInfo;
 import com.viseator.hackinit20.data.UDPDataPackage;
 import com.viseator.hackinit20.network.ComUtil;
+import com.viseator.hackinit20.network.GetNetworkInfo;
 import com.viseator.hackinit20.util.ConvertData;
 
+import java.nio.charset.Charset;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +53,7 @@ public class MainService extends Service implements View.OnTouchListener {
     private HashMap<String, ProcessInfo> processinfors;
     private WindowManager.LayoutParams mLayoutParams;
     public String ipAddress;
+    private boolean ipGot = false;
     private int initX = 0;
     private int initY = 0;
     private int lastX = 0;
@@ -64,10 +67,15 @@ public class MainService extends Service implements View.OnTouchListener {
         public boolean handleMessage(Message msg) {
             switch (msg.what) {
                 case ComUtil.BROADCAST_PORT:
-                    UDPDataPackage result = (UDPDataPackage) (ConvertData.byteToObject((byte[]) msg.obj));
-                    ipAddress = result.getIpAddress();
-                    Log.d(TAG, ipAddress);
-                    mComUtil.broadCast(ConvertData.objectToByte(new UDPDataPackage(getApplicationContext())));
+                    String ip = new String((byte[]) msg.obj, ComUtil.CHARSET);
+                    if (!ip.equals(GetNetworkInfo.getIp(getApplicationContext())
+                    )) {
+                        ipAddress = ip;
+                        Log.d(TAG, ipAddress);
+                        mComUtil.broadCast(new String(GetNetworkInfo.getIp(getApplicationContext
+                                ())).getBytes(ComUtil.CHARSET));
+                        ipGot = true;
+                    }
                     break;
             }
             return true;
