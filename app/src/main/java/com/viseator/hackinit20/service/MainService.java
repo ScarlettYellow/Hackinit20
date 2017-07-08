@@ -32,6 +32,7 @@ import com.viseator.hackinit20.network.GetNetworkInfo;
 import com.viseator.hackinit20.util.ConvertData;
 
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -67,13 +68,13 @@ public class MainService extends Service implements View.OnTouchListener {
         public boolean handleMessage(Message msg) {
             switch (msg.what) {
                 case ComUtil.BROADCAST_PORT:
-                    String ip = new String((byte[]) msg.obj, ComUtil.CHARSET);
-                    if (!ip.equals(GetNetworkInfo.getIp(getApplicationContext())
+                    String ip = (String) ConvertData.byteToObject((byte[]) msg.obj);
+                    if (!ip.equals(GetNetworkInfo.getIp(getApplicationContext
+                            ())
                     )) {
                         ipAddress = ip;
                         Log.d(TAG, ipAddress);
-                        mComUtil.broadCast(new String(GetNetworkInfo.getIp(getApplicationContext
-                                ())).getBytes(ComUtil.CHARSET));
+                        mComUtil.broadCast(ConvertData.objectToByte(GetNetworkInfo.getIp(getApplicationContext())));
                         ipGot = true;
                     }
                     break;
