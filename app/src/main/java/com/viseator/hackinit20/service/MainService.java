@@ -63,24 +63,7 @@ public class MainService extends Service implements View.OnTouchListener {
     public void onCreate() {
         super.onCreate();
 
-        mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        mContentView = LayoutInflater.from(getApplicationContext()).inflate(R.layout
-                .bubble_layout, null, false);
-        ButterKnife.bind(this, mContentView);
-        mLayoutParams = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_PHONE,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                PixelFormat.TRANSLUCENT);
 
-        mLayoutParams.gravity = Gravity.TOP | Gravity.START;
-
-        mContentView.setOnTouchListener(this);
-
-        mWindowManager.addView(mContentView, mLayoutParams);
-        mImageView.setImageDrawable(getDrawable(R.drawable.star));
-        Log.d(TAG, String.valueOf("add View"));
         processinfors = new HashMap<>();
         PackageManager manager = getPackageManager();
 
@@ -120,6 +103,27 @@ public class MainService extends Service implements View.OnTouchListener {
             }
         }
         getUsage();
+    }
+
+    private void showBubble() {
+        mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        mContentView = LayoutInflater.from(getApplicationContext()).inflate(R.layout
+                .bubble_layout, null, false);
+        ButterKnife.bind(this, mContentView);
+        mLayoutParams = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.TYPE_PHONE,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                PixelFormat.TRANSLUCENT);
+
+        mLayoutParams.gravity = Gravity.TOP | Gravity.START;
+
+        mContentView.setOnTouchListener(this);
+
+        mWindowManager.addView(mContentView, mLayoutParams);
+        mImageView.setImageDrawable(getDrawable(R.drawable.star));
+        Log.d(TAG, String.valueOf("add View"));
     }
 
     @Override
