@@ -11,6 +11,33 @@ public class ProcessInfo {
     private long begin_time;
     private long running_time;
     private int pid;
+    private long end_time;
+    private String begin_time_text;
+    private String end_time_text;
+
+    public String getBegin_time_text() {
+        return begin_time_text;
+    }
+
+    public void setBegin_time_text(String begin_time_text) {
+        this.begin_time_text = begin_time_text;
+    }
+
+    public String getEnd_time_text() {
+        return end_time_text;
+    }
+
+    public void setEnd_time_text(String end_time_text) {
+        this.end_time_text = end_time_text;
+    }
+
+    public long getEnd_time() {
+        return end_time;
+    }
+
+    public void setEnd_time(long end_time) {
+        this.end_time = end_time;
+    }
 
     public String getName() {
         return name;

@@ -2,8 +2,6 @@ package com.viseator.hackinit20.service;
 
 import android.app.ActivityManager;
 import android.app.Service;
-import android.app.usage.UsageStats;
-import android.app.usage.UsageStatsManager;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -21,20 +19,22 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.jaredrummler.android.processes.ProcessManager;
 import com.viseator.hackinit20.R;
+import com.viseator.hackinit20.data.FilterApps;
 import com.viseator.hackinit20.data.ProcessInfo;
 import com.viseator.hackinit20.data.UDPDataPackage;
 import com.viseator.hackinit20.network.ComUtil;
 import com.viseator.hackinit20.network.GetNetworkInfo;
 import com.viseator.hackinit20.util.ConvertData;
+import com.viseator.hackinit20.utils.DateUtils;
 
 import java.nio.charset.Charset;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -50,7 +50,7 @@ public class MainService extends Service implements View.OnTouchListener {
     private static final String TAG = "@vir MainService";
     private ComUtil mComUtil;
     private WindowManager mWindowManager;
-    private HashMap<String, ProcessInfo> processinfors;
+    private HashMap<String, ProcessInfo> processinfors, oldprocessinfo;
     private WindowManager.LayoutParams mLayoutParams;
     public String ipAddress;
     private boolean ipGot = false;
@@ -82,6 +82,8 @@ public class MainService extends Service implements View.OnTouchListener {
         }
     });
 
+    private Handler handler = new Handler();
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -95,45 +97,77 @@ public class MainService extends Service implements View.OnTouchListener {
 
         initNetwork();
         processinfors = new HashMap<>();
-        PackageManager manager = getPackageManager();
+        oldprocessinfo = new HashMap<>();
+        handler.postDelayed(getAppRunninginfo, 10000);
+    }
 
-        List<ActivityManager.RunningAppProcessInfo> runningAppProcessInfos;
-        if (Build.VERSION.SDK_INT < 22) {
-            runningAppProcessInfos = ((ActivityManager) getSystemService(ACTIVITY_SERVICE)).getRunningAppProcesses();
-        } else {
-            runningAppProcessInfos = ProcessManager.getRunningAppProcessInfo(this);
-        }
-        if (runningAppProcessInfos != null) {
-            for (ActivityManager.RunningAppProcessInfo runningAppProcessInfo : runningAppProcessInfos) {
-                int pid = Process.myPid();
-
-                if (pid != runningAppProcessInfo.pid) {
-                    ProcessInfo processInfo = new ProcessInfo();
-                    processInfo.setPid(pid);
-                    String name = null;
-                    try {
-                        ApplicationInfo info = manager.getApplicationInfo(runningAppProcessInfo.pkgList != null &&
-                                runningAppProcessInfo.pkgList.length > 0 ? runningAppProcessInfo.pkgList[0] : runningAppProcessInfo.processName, 0);
-                        name = (String) manager.getApplicationLabel(info);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+    private Runnable getAppRunninginfo = new Runnable() {
+        @Override
+        public void run() {
+            PackageManager manager = getPackageManager();
+            List<ActivityManager.RunningAppProcessInfo> runningAppProcessInfos;
+            //清空原来数据
+            processinfors.clear();
+            if (Build.VERSION.SDK_INT < 22) {
+                runningAppProcessInfos = ((ActivityManager) getSystemService(ACTIVITY_SERVICE)).getRunningAppProcesses();
+            } else {
+                runningAppProcessInfos = ProcessManager.getRunningAppProcessInfo(MainService.this);
+            }
+            if (runningAppProcessInfos != null) {
+                for (ActivityManager.RunningAppProcessInfo runningAppProcessInfo : runningAppProcessInfos) {
+                    int pid = Process.myPid();
+                    if (pid != runningAppProcessInfo.pid && FilterApps.contains(runningAppProcessInfo.processName)) {
+                        ProcessInfo processInfo = new ProcessInfo();
+                        processInfo.setPid(pid);
+                        String name = null;
+                        try {
+                            ApplicationInfo info = manager.getApplicationInfo(runningAppProcessInfo.pkgList != null &&
+                                    runningAppProcessInfo.pkgList.length > 0 ? runningAppProcessInfo.pkgList[0] : runningAppProcessInfo.processName, 0);
+                            name = (String) manager.getApplicationLabel(info);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        if (name == null) {
+                            name = runningAppProcessInfo.processName;
+                        }
+                        processInfo.setName(name);
+                        processInfo.setBegin_time(System.currentTimeMillis());
+                        processinfors.put(runningAppProcessInfo.processName, processInfo);
                     }
-                    if (name == null) {
-                        name = runningAppProcessInfo.processName;
-                    }
-                    processInfo.setName(name);
-                    processInfo.setBegin_time(System.currentTimeMillis());
-                    processInfo.setRunning_time(0);
-                    processinfors.put(runningAppProcessInfo.processName, processInfo);
-
-                    Log.d(TAG, "进程名: " + processInfo.getName());
-                    Log.d(TAG, "进程pid: " + processInfo.getPid() + " ");
-                    Log.d(TAG, "进程包名: " + runningAppProcessInfo.processName);
                 }
             }
+            Set<String> oldkeys = oldprocessinfo.keySet();
+            for (String s : oldkeys) {
+                if (processinfors.get(s) == null) {
+                    ProcessInfo info = oldprocessinfo.get(s);
+                    long endtime = System.currentTimeMillis();
+                    info.setEnd_time(endtime);
+                    info.setEnd_time_text(DateUtils.formatToNormal(endtime));
+                    info.setRunning_time(info.getEnd_time() - info.getBegin_time());
+                    Log.e(TAG, "取消进程名: " + info.getName());
+                    Log.e(TAG, "取消进程pid: " + info.getPid() + " ");
+                    Log.e(TAG, "取消进程包名: " + s);
+                    // TODO: 7/9/17 remove data from database status:close
+                }
+            }
+            Set<String> currentkeys = processinfors.keySet();
+            for (String s : currentkeys) {
+                if (oldprocessinfo.get(s) == null) {
+                    ProcessInfo info = processinfors.get(s);
+                    long begin_time = System.currentTimeMillis();
+                    info.setBegin_time(begin_time);
+                    info.setBegin_time_text(DateUtils.formatToNormal(begin_time));
+                    Log.e(TAG, "打开进程名: " + info.getName());
+                    Log.e(TAG, "打开进程pid: " + info.getPid() + " ");
+                    Log.e(TAG, "打开进程包名: " + s);
+                    // TODO: 7/9/17 add data from database status: open
+                }
+            }
+            oldprocessinfo = (HashMap<String, ProcessInfo>) processinfors.clone();
+            //每隔10秒钟更新一次
+            handler.postDelayed(getAppRunninginfo, 10000);
         }
-        getUsage();
-    }
+    };
 
     private void showBubble() {
         mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
@@ -161,21 +195,6 @@ public class MainService extends Service implements View.OnTouchListener {
         super.onDestroy();
         if (mContentView != null) {
             mWindowManager.removeView(mContentView);
-        }
-    }
-
-    private void getUsage() {
-        Calendar callendar = Calendar.getInstance();
-        long end = callendar.getTimeInMillis();
-        callendar.add(Calendar.MINUTE, -1);
-        long start = callendar.getTimeInMillis();
-        UsageStatsManager manage = (UsageStatsManager) getSystemService(USAGE_STATS_SERVICE);
-        List<UsageStats> stats = manage.queryUsageStats(UsageStatsManager.INTERVAL_BEST, start, end);
-        for (UsageStats stat : stats) {
-            String name = stat.getPackageName();
-            ProcessInfo info = processinfors.get(name);
-            info.setRunning_time(info.getRunning_time() + stat.getLastTimeUsed());
-            Log.e(TAG, "运行时间：" + info.getRunning_time());
         }
     }
 
