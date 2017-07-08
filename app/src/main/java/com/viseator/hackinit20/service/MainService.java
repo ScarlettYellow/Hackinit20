@@ -134,10 +134,9 @@ public class MainService extends Service implements View.OnTouchListener {
                     processInfo.setBegin_time(System.currentTimeMillis());
                     processInfo.setRunning_time(0);
                     processinfors.put(runningAppProcessInfo.processName, processInfo);
-
-                    Log.d(TAG, "进程名: " + processInfo.getName());
-                    Log.d(TAG, "进程pid: " + processInfo.getPid() + " ");
-                    Log.d(TAG, "进程包名: " + runningAppProcessInfo.processName);
+//                    Log.d(TAG, "进程名: " + processInfo.getName());
+//                    Log.d(TAG, "进程pid: " + processInfo.getPid() + " ");
+//                    Log.d(TAG, "进程包名: " + runningAppProcessInfo.processName);
                 }
             }
         }
@@ -227,6 +226,10 @@ public class MainService extends Service implements View.OnTouchListener {
     private void TcpClientInit() {
         mTcpClient = new TcpClient();
         mTcpClient.sendRequest(ipAddress, "test");
+    }
+
+    private void sendData(String name,long time,boolean isOpen) {
+
     }
 
 }
