@@ -5,7 +5,9 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.PixelFormat;
+import android.graphics.drawable.AnimationDrawable;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -51,6 +53,7 @@ import butterknife.ButterKnife;
 
 public class MainService extends Service implements View.OnTouchListener {
     private static final String TAG = "@vir MainService";
+    private AnimationDrawable animationDrawable;
     private ComUtil mComUtil;
     private WindowManager mWindowManager;
     private HashMap<String, ProcessInfo> processinfors, oldprocessinfo;
@@ -200,8 +203,19 @@ public class MainService extends Service implements View.OnTouchListener {
         mContentView.setOnTouchListener(this);
 
         mWindowManager.addView(mContentView, mLayoutParams);
-        mImageView.setImageDrawable(getDrawable(R.drawable.star));
+        animationDrawable = new AnimationDrawable();
+        addFrames(animationDrawable, 30);
+        mImageView.setImageDrawable(animationDrawable);
         Log.d(TAG, String.valueOf("add View"));
+    }
+
+    private void addFrames(AnimationDrawable animationDrawable, int n) {
+        for (int i = 0; i < n; i++) {
+            String name = "s_000" + String.format("%02d", i);
+            Resources res = getResources();
+            int id = res.getIdentifier(name, "drawable", this.getPackageName());
+            animationDrawable.addFrame(getDrawable(id), 33);
+        }
     }
 
     @Override
@@ -218,6 +232,7 @@ public class MainService extends Service implements View.OnTouchListener {
         int rawY = (int) event.getRawY();
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                animationDrawable.start();
                 isDragging = true;
                 initX = rawX;
                 initY = rawY;
@@ -234,6 +249,9 @@ public class MainService extends Service implements View.OnTouchListener {
                 lastX = rawX;
                 lastY = rawY;
                 break;
+            case MotionEvent.ACTION_UP:
+                animationDrawable.stop();
+
         }
         return true;
     }
