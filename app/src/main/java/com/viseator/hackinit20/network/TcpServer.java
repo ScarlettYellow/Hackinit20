@@ -38,6 +38,7 @@ public class TcpServer {
                 serverSocket = new ServerSocket();
                 serverSocket.setReuseAddress(true);
                 serverSocket.bind(new InetSocketAddress(SERVER_PORT));
+                serverSocket.setSoTimeout(99999);
             } catch (IOException e) {
                 e.printStackTrace();
             }

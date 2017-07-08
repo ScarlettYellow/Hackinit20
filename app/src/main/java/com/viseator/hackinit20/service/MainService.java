@@ -21,6 +21,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.jaredrummler.android.processes.ProcessManager;
 import com.viseator.hackinit20.R;
@@ -79,7 +80,7 @@ public class MainService extends Service implements View.OnTouchListener {
                     }
                     break;
                 case TcpServer.RECEIVE_REQUEST:
-                    Log.d(TAG, (String) msg.obj);
+                    Toast.makeText(MainService.this, (String) msg.obj, Toast.LENGTH_SHORT).show();
                     if (((msg.obj)).equals("test")) {
                         TcpClientInit();
                     }

@@ -35,7 +35,7 @@ public class TcpClient {
                 socket = new Socket(ipAddress, SERVER_PORT);
                 socket.setReuseAddress(true);
                 socket.setKeepAlive(true);
-                socket.setSoTimeout(5000);
+                socket.setSoTimeout(99999);
 
                 OutputStream outputStream = socket.getOutputStream();
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
