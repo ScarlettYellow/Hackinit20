@@ -21,8 +21,10 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.jaredrummler.android.processes.ProcessManager;
 import com.viseator.hackinit20.R;
+import com.viseator.hackinit20.data.DataBean;
 import com.viseator.hackinit20.data.FilterApps;
 import com.viseator.hackinit20.data.ProcessInfo;
 import com.viseator.hackinit20.network.ComUtil;
@@ -99,11 +101,12 @@ public class MainService extends Service implements View.OnTouchListener {
     }
 
     private Handler handler = new Handler();
+
     @Override
     public void onCreate() {
         super.onCreate();
         showBubble();
-
+        FilterApps.init();
         initNetwork();
         processinfors = new HashMap<>();
         oldprocessinfo = new HashMap<>();
@@ -156,6 +159,7 @@ public class MainService extends Service implements View.OnTouchListener {
                     Log.e(TAG, "取消进程名: " + info.getName());
                     Log.e(TAG, "取消进程pid: " + info.getPid() + " ");
                     Log.e(TAG, "取消进程包名: " + s);
+                    sendData(info.getName(), endtime, false);
                     // TODO: 7/9/17 remove data from database status:close
                 }
             }
@@ -169,6 +173,7 @@ public class MainService extends Service implements View.OnTouchListener {
                     Log.e(TAG, "打开进程名: " + info.getName());
                     Log.e(TAG, "打开进程pid: " + info.getPid() + " ");
                     Log.e(TAG, "打开进程包名: " + s);
+                    sendData(info.getName(), begin_time, true);
                     // TODO: 7/9/17 add data from database status: open
                 }
             }
@@ -248,7 +253,18 @@ public class MainService extends Service implements View.OnTouchListener {
         mTcpClient.sendRequest(ipAddress, "test");
     }
 
-    private void sendData(String name,long time,boolean isOpen) {
+    private void sendData(String name, long time, boolean isOpen) {
+        if (ipAddress == null) {
+            return;
+        }
+        DataBean dataBean = new DataBean();
+        dataBean.setCode(1);
+        dataBean.setIsOpen(isOpen);
+        dataBean.setName(name);
+        dataBean.setTime(time);
+        Gson gson = new Gson();
+        String data = gson.toJson(dataBean, dataBean.getClass());
+        mTcpClient.sendRequest(ipAddress, data);
 
     }
 

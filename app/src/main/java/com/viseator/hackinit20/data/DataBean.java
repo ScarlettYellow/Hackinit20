@@ -1,7 +1,5 @@
 package com.viseator.hackinit20.data;
 
-import java.util.List;
-
 /**
  * Created by viseator on 7/8/17.
  *
@@ -11,17 +9,22 @@ import java.util.List;
 
 public class DataBean {
 
+
     /**
      * code : 1
      * message : string
      * gesture : 1
-     * app : [{"name":"king","time":"11111","isOpen":"false"},{"name":"yin","time":"11111","isOpen":"true"}]
+     * name : king
+     * time : 11111
+     * isOpen : false
      */
 
     private int code;
     private String message;
     private int gesture;
-    private List<AppBean> app;
+    private String name;
+    private long time;
+    private boolean isOpen;
 
     public int getCode() {
         return code;
@@ -47,47 +50,27 @@ public class DataBean {
         this.gesture = gesture;
     }
 
-    public List<AppBean> getApp() {
-        return app;
+    public String getName() {
+        return name;
     }
 
-    public void setApp(List<AppBean> app) {
-        this.app = app;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public static class AppBean {
-        /**
-         * name : king
-         * time : 11111
-         * isOpen : false
-         */
+    public long getTime() {
+        return time;
+    }
 
-        private String name;
-        private long time;
-        private boolean isOpen;
+    public void setTime(long time) {
+        this.time = time;
+    }
 
-        public String getName() {
-            return name;
-        }
+    public boolean isIsOpen() {
+        return isOpen;
+    }
 
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public long getTime() {
-            return time;
-        }
-
-        public void setTime(long time) {
-            this.time = time;
-        }
-
-        public boolean isIsOpen() {
-            return isOpen;
-        }
-
-        public void setIsOpen(boolean isOpen) {
-            this.isOpen = isOpen;
-        }
+    public void setIsOpen(boolean isOpen) {
+        this.isOpen = isOpen;
     }
 }
