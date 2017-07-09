@@ -1,4 +1,4 @@
-package com.viseator.hackinit20.utils;
+package com.viseator.hackinit20.util;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;

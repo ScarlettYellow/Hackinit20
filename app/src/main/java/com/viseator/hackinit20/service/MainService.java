@@ -30,9 +30,8 @@ import com.viseator.hackinit20.network.GetNetworkInfo;
 import com.viseator.hackinit20.network.TcpClient;
 import com.viseator.hackinit20.network.TcpServer;
 import com.viseator.hackinit20.util.ConvertData;
-import com.viseator.hackinit20.utils.DateUtils;
+import com.viseator.hackinit20.util.DateUtils;
 
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -103,7 +102,7 @@ public class MainService extends Service implements View.OnTouchListener {
     public void onCreate() {
         super.onCreate();
         showBubble();
-
+        FilterApps.init();
         initNetwork();
         processinfors = new HashMap<>();
         oldprocessinfo = new HashMap<>();

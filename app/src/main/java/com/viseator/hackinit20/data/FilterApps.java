@@ -21,6 +21,19 @@ public class FilterApps {
         filerapps.add("com.netease.onmyoji.vivo"); //阴阳师
     }
 
+    public static boolean isQqOrWechat(String packagername) {
+        if (packagername.equals("com.tencent.mobileqq")  || packagername.equals("com.tencent.mm")) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isOtherApp(String packagename) {
+        if (contains(packagename) && !isQqOrWechat(packagename)) {
+            return true;
+        }
+        return false;
+    }
     public static boolean contains(String packagename) {
         return filerapps.contains(packagename);
     }
